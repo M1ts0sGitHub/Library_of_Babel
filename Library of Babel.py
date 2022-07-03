@@ -19,19 +19,19 @@ pageline= 55
 pagepos= 0
 validchars=("ABGDEZ8IKLMN0PRSTUFX1234567 9,.!") #Valid characters for Greeklish version + numbers
 
-bin2enc={}
-for x in range(95):
+bin2enc={} 
+for x in range(95): #binary to 7bits characters
     bin2enc["0" *(7-len(bin(x)[2:])) +bin(x)[2:]]=chr(x+32)
 for x in range(192,225):
     bin2enc["0" *(7-len(bin(x-97)[2:])) +bin(x-97)[2:]]=chr(x)
 
 enc2bin={}
-for x in range(95):
+for x in range(95): #7bits characters to binary
     enc2bin[chr(x+32)]= "0" *(7-len(bin(x)[2:])) +bin(x)[2:]
 for x in range(192,225):
     enc2bin[chr(x)]= "0" *(7-len(bin(x-97)[2:])) +bin(x-97)[2:]
 
-chars=""
+chars="" #valid 7bits characters
 for x in range(len(bin2enc)):
     chars= chars + bin2enc["0" *(7-len(bin(x)[2:])) +bin(x)[2:]]
 
@@ -100,9 +100,7 @@ def printaddress(address,f):
             f.write(address[pageline*x:pageline*(x+1)]+"\n")
         f.write(address[pageline*(x+1):len(address)])
         f.close()
-
-# Convert page to binary
-def bpage(page):
+def bpage(page): # Convert page to binary
     temp =""
     dec2bin={}
     for x in range(32):
@@ -112,9 +110,7 @@ def bpage(page):
     for x in range(len(page)):
         temp = temp + dec2bin[page[x]]
     return temp
-
-# Convert binary page to page
-def hex2binary(hex):
+def hex2binary(hex): # Convert binary page to page
     temp =""
     enc2bin={}
     for x in range(95):
@@ -126,7 +122,24 @@ def hex2binary(hex):
     for x in hex:
         binary = binary + str(enc2bin[x])
     return binary
-def address2page(address,offset):    
+def findaddress(page): # Finds page in Hex, wall, shelf, volume, page
+    temp=""
+    binpage = bpage(page)
+    
+    while len(binpage)>19:
+        temp = temp + bin2enc[binpage[:7]]
+        binpage = binpage[7:]
+    
+    hex, wall, shelf, volume, page = "",0,0,0,0
+    wall = int(str(binpage[0:2]),2)+1
+    shelf = int(str(binpage[2:5]),2)+1
+    volume = int(str(binpage[5:10]),2)+1
+    page = int(str(binpage[10:19]),2)+1
+    hex  = enc(temp,str(page))
+    address = hex+"-w"+str(wall)+"-s"+str(shelf)+"-v"+str(volume)+"-p"+str(page)
+    
+    return address
+def address2page(address,offset):  #prints the address
     walln = address[783:].find("-w")+2 + 783
     shelfn = address[783:].find("-s")+2 + 783
     volumen = address[783:].find("-v")+2 + 783
@@ -161,24 +174,6 @@ def address2page(address,offset):
         temp = temp + bin2dec[binary[x:x+5]]
     return temp 
 
-# Finds page in Hex, wall, shelf, volume, page
-def findaddress(page):
-    temp=""
-    binpage = bpage(page)
-    
-    while len(binpage)>19:
-        temp = temp + bin2enc[binpage[:7]]
-        binpage = binpage[7:]
-    
-    hex, wall, shelf, volume, page = "",0,0,0,0
-    wall = int(str(binpage[0:2]),2)+1
-    shelf = int(str(binpage[2:5]),2)+1
-    volume = int(str(binpage[5:10]),2)+1
-    page = int(str(binpage[10:19]),2)+1
-    hex  = enc(temp,str(page))
-    address = hex+"-w"+str(wall)+"-s"+str(shelf)+"-v"+str(volume)+"-p"+str(page)
-    
-    return address
 def shuffle(text,seed):
     temp=[]
     rng= np.random.default_rng(text2num(seed))
@@ -214,7 +209,7 @@ ansstate=True
 ans=""
 os.system("title Library of Bable (alexandropoulos.dimitrios@gmail.com)")
 
-while ansstate: 
+while ansstate: #menu
     os.system("cls")
     print("Library of Babel (Greeklish Edition)")
     print()
